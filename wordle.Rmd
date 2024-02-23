@@ -1,0 +1,92 @@
+---
+title: "wordle"
+author: "Claire Brandes"
+date: "2024-02-21"
+output: html_document
+---
+
+# Wordle Challenge: Applied Data Analysis 2024
+
+## Step 1
+
+Create custom function called load_dictionary() that takes a single argument, "filename", that can be sued to read in either of the two data files downloaded.
+
+```{r}
+load_dictionary <- function(filename) {
+  library(readr)
+  f <- filename
+  return(read_tsv(f, col_names = TRUE))
+}
+```
+
+Use the load_dictionary() function to create two variables, solution_list and valid_list, that, respectively contain vectors of possible solution words and valid words to guess.
+
+```{r}
+valid_list <- load_dictionary("https://raw.githubusercontent.com/clairebran/exercise-04/main/collins-scrabble-words-2019.txt")
+
+solution_list <- load_dictionary("https://raw.githubusercontent.com/clairebran/exercise-04/main/google-10000-english-usa-no-swears.txt")
+```
+
+## Step 2
+
+Winnow variable solution_list to only include words that are included in valid_list. The solution list now has only 8,336 words when before it had 9,884. 
+
+```{r}
+solution_list <- intersect(valid_list, solution_list)
+```
+
+## Step 3
+
+Write custom function called pick_solution() that (1) removes all words from solution_list that are not 5 letters in length, (2) randomly chooses a single word from those that remain, and (3) splits that word into a vector of single-character elements. 
+
+```{r}
+pick_solution <- function(solution_list) {
+  solution_list$five_words <- nchar(solution_list$words) == 5 
+  solution_list <- subset(solution_list, five_words == "TRUE", words)
+  answer <- sample(solution_list$words, 1)
+  answer <- strsplit(answer, split = "")
+  return(answer)
+}
+```
+
+Run function and assign the result to a variable called solution:
+
+```{r}
+solution <- unlist(pick_solution(solution_list))
+```
+
+## Step 4
+
+Create function called play_wordle() that takes three arguments: (1) the answer to the puzzle, (2) a list of valid guesses, and (3) a value for number of guesses. 
+
+```{r}
+play_wordle <- function(solution, valid_list, num_guesses = 6) {
+  welcome_message <- "Welcome to Wordle! Guess the solution in 6 tries. Each guess must be a valid 5-letter word. The color of letters will change to show how close your guess was to the word. Green indicates a letter is in the word and in the correct spot. Yellow indicates a letter is in the word but in the incorrect spot. Gray indicates a letter is not in the word in any spot."
+  
+  print(welcome_message, quote = FALSE)
+  print("Letters not-yet guessed:", quote = FALSE)
+  letters_left <- LETTERS 
+  print(letters_left) 
+  guess <- readline("Enter your 5-letter guess here, then press enter: ")
+  guess <- strsplit(guess, split = "")
+  return(evaluate_guess(guess, solution))
+}
+```
+
+Create function called evaluate_guess() that provides feedback based on guess input. 
+
+```{r}
+evaluate_guess <- function(guess, solution) {
+  library(stringr)
+  if (setequal(guess[1], solution[1]=TRUE)) {
+    print(str_replace(guess[1], "*"))
+  } else {
+    if (any(solution==guess[1]=TRUE)) {
+      print(str_replace(guess[1], "+"))
+    } else {
+      print(str_replace(guess[1], "-"))
+    }
+  }
+}
+```
+
