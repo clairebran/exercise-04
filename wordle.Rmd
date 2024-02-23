@@ -32,7 +32,8 @@ solution_list <- load_dictionary("https://raw.githubusercontent.com/clairebran/e
 Winnow variable solution_list to only include words that are included in valid_list. The solution list now has only 8,336 words when before it had 9,884. 
 
 ```{r}
-solution_list <- intersect(valid_list, solution_list)
+library(dplyr)
+solution_list <- inner_join(valid_list, solution_list, by = join_by(words))
 ```
 
 ## Step 3
@@ -44,7 +45,7 @@ pick_solution <- function(solution_list) {
   solution_list$five_words <- nchar(solution_list$words) == 5 
   solution_list <- subset(solution_list, five_words == "TRUE", words)
   answer <- sample(solution_list$words, 1)
-  answer <- strsplit(answer, split = "")
+  answer <- unlist(strsplit(answer, split = ""))
   return(answer)
 }
 ```
@@ -61,15 +62,20 @@ Create function called play_wordle() that takes three arguments: (1) the answer 
 
 ```{r}
 play_wordle <- function(solution, valid_list, num_guesses = 6) {
-  welcome_message <- "Welcome to Wordle! Guess the solution in 6 tries. Each guess must be a valid 5-letter word. The color of letters will change to show how close your guess was to the word. Green indicates a letter is in the word and in the correct spot. Yellow indicates a letter is in the word but in the incorrect spot. Gray indicates a letter is not in the word in any spot."
+  library(stringr)
+  
+  welcome_message <- "Welcome to Wordle! Guess the solution in 6 tries. Each guess must be a valid 5-letter word. A letter will be replaced with * if it is in the word and in the correct spot. A letter will be replaced with + if it is in the word but in the incorrect spot. A letter will be replaced with - if it is not anywhere in the word."
   
   print(welcome_message, quote = FALSE)
-  print("Letters not-yet guessed:", quote = FALSE)
-  letters_left <- LETTERS 
-  print(letters_left) 
+  for (i in 1:num_guesses) {
   guess <- readline("Enter your 5-letter guess here, then press enter: ")
-  guess <- strsplit(guess, split = "")
-  return(evaluate_guess(guess, solution))
+  guess <- unlist(strsplit(guess, split = ""))
+  guess <- toupper(guess)
+  print("Letters not yet guessed: ")
+  letters_left <- (setdiff(LETTERS, guess))
+  print(letters_left)
+  print(evaluate_guess(guess, solution))
+  }
 }
 ```
 
@@ -77,15 +83,70 @@ Create function called evaluate_guess() that provides feedback based on guess in
 
 ```{r}
 evaluate_guess <- function(guess, solution) {
-  library(stringr)
-  if (setequal(guess[1], solution[1]=TRUE)) {
-    print(str_replace(guess[1], "*"))
+  if (setequal(guess[1], solution[1])==TRUE) {
+    guess <- str_replace(guess, guess[1], "*")
+    cat(guess, "\nNice job!")
   } else {
-    if (any(solution==guess[1]=TRUE)) {
-      print(str_replace(guess[1], "+"))
+    if (any(solution==guess[1])==TRUE) {
+      guess <- str_replace(guess, guess[1], "+")
+      cat(guess, "\nSo close! Try moving your letters around")
     } else {
-      print(str_replace(guess[1], "-"))
+      guess <- str_replace(guess, guess[1], "-")
+      cat(guess, "\nUh oh! Try again.")
     }
+  }
+  if (setequal(guess[2], solution[2])==TRUE) {
+    guess <- str_replace(guess, guess[2], "*")
+    feedback <- cat(guess, "\nNice job!") 
+  } else {
+    if (any(solution==guess[2])==TRUE) {
+      guess <- str_replace(guess, guess[2], "+")
+      cat(guess, "\nSo close! Try moving your letters around")
+    } else {
+      guess <- str_replace(guess, guess[2], "-")
+      cat(guess, "\nUh oh! Try again.")
+    }
+  }
+  if (setequal(guess[3], solution[3])==TRUE) {
+    guess <- str_replace(guess, guess[3], "*")
+    cat(guess, "\nNice job!") 
+  } else {
+    if (any(solution==guess[3])==TRUE) {
+      guess <- str_replace(guess, guess[3], "+")
+      cat(guess, "\nSo close! Try moving your letters around")
+    } else {
+      guess <- str_replace(guess, guess[3], "-")
+      cat(guess, "\nUh oh! Try again.")
+    }
+  }
+  if (setequal(guess[4], solution[4])==TRUE) {
+    guess <- str_replace(guess, guess[4], "*")
+    cat(guess, "\nNice job!") 
+  } else {
+    if (any(solution==guess[4])==TRUE) {
+      guess <- str_replace(guess, guess[4], "+")
+      cat(guess, "\nSo close! Try moving your letters around")
+    } else {
+      guess <- str_replace(guess, guess[4], "-")
+      cat(guess, "\nUh oh! Try again.")
+    }
+  }
+  if (setequal(guess[5], solution[5])==TRUE) {
+    guess <- str_replace(guess, guess[5], "*")
+    cat(guess, "\nNice job!") 
+  } else {
+    if (any(solution==guess[5])==TRUE) {
+      guess <- str_replace(guess, guess[5], "+")
+      cat(guess, "\nSo close! Try moving your letters around")
+    } else {
+      guess <- str_replace(guess, guess[5], "-")
+      cat(guess, "\nUh oh! Try again.")
+    }
+  }
+  if (setequal(guess,solution)==TRUE) {
+    cat(guess, "\nWinner Winner! You're a Wordle pro!")
+  } else {
+    cat(guess, "\nTough luck! Try again next time.")
   }
 }
 ```
